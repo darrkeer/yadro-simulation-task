@@ -98,7 +98,7 @@ std::unique_ptr<event> client_leave_event::apply(state &state) {
 
 std::unique_ptr<event> client_sat_event::apply(state &state) {
     state.update_time(time());
-    if (!state.tables[_table].is_free) {
+    if (!state.get_table(_table).is_free) {
         return std::make_unique<error_event>(time(), "PlaceIsBusy");
     }
     if (!state.is_registered(_client_name)) {
@@ -127,7 +127,7 @@ std::unique_ptr<event> auto_client_leave_event::apply(state &state) {
         state.remove_from_play(c.name);
     }
     // if he is in queue
-    state.unregister_client(c.name);
+    // state.unregister_client(c.name);
     return nullptr;
 }
 
@@ -170,6 +170,7 @@ void event::process(const std::vector<std::unique_ptr<event> > &events, state &s
         auto new_event = ptr->apply(s);
         std::cout << ptr->to_string() << "\n";
         if (new_event != nullptr) {
+            new_event->apply(s);
             std::cout << new_event->to_string() << "\n";
         }
     }
@@ -183,8 +184,10 @@ void event::process(const std::vector<std::unique_ptr<event> > &events, state &s
 
     std::cout << time_to_string(s.close_time) << "\n";
 
-    for (std::size_t i=0; i<s.tables.size(); ++i) {
-        std::cout << (i + 1) << " " << s.tables[i].load_time * s.earn_in_h << " " << time_to_string(s.tables[i].load_time) << "\n";
+    for (std::size_t i=1; i<=s.tables.size(); ++i) {
+        table& t = s.get_table(i);
+        std::size_t hours_sit = t.load_time;
+        std::cout << i << " " << (hours_sit / 60 + (hours_sit % 60 > 0)) * s.earn_in_h << " " << time_to_string(t.load_time) << "\n";
     }
 }
 

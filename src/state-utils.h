@@ -63,6 +63,8 @@ public:
 
     void unregister_client(const std::string& name);
 
+    table& get_table(std::size_t i);
+
     std::string next_in_queue();
 
     bool has_next_in_queue();
